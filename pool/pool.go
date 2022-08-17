@@ -20,7 +20,7 @@ func NewPool(cmp skiplist.CompareAble) *pool {
 }
 
 //生成订单排序key
-func (p *pool) GenerateSortKey(order *models.Order) *models.SortKey {
+func (p *pool) generateSortKey(order *models.Order) *models.SortKey {
 	price, _ := decimal.NewFromString(order.Price)
 	amount, _ := decimal.NewFromString(order.Amount)
 	return &models.SortKey{
@@ -33,17 +33,41 @@ func (p *pool) GenerateSortKey(order *models.Order) *models.SortKey {
 
 //写入撮合池
 func (p *pool) Insert(order *models.Order) {
-	p.sl.Insert(p.GenerateSortKey(order), order)
+	p.sl.Insert(p.generateSortKey(order), order)
 }
 
-//获取撮合池内订单数量
-func (p *pool) GetOrderLength() int {
+//获取撮合池内订单深度
+func (p *pool) GetOrderDepth() int {
 	return p.sl.GetLength()
+}
+
+//更新指定档位的数据
+func (p *pool) UpdateDataByDepth(rk int, order *models.Order) bool {
+	if rk <= p.GetOrderDepth() {
+		return p.sl.UpdateByRank(rk, order)
+	}
+	return false
+}
+
+//删除指定档位的数据
+func (p *pool) DeleteByDepth(rk int) bool {
+	if rk <= p.GetOrderDepth() {
+		return p.sl.DeleteByRank(rk)
+	}
+	return false
+}
+
+//删除指定订单
+func (p *pool) DeleteByOrder(order *models.Order) bool {
+	if p.GetOrderDepth() > 0 {
+		return p.sl.DeleteBatchByKey(p.generateSortKey(order))
+	}
+	return false
 }
 
 //获取撮合池指定档位的数据
 func (p *pool) GetDepthData(rk int) *models.Order {
-	if rk <= p.sl.GetLength() {
+	if rk <= p.GetOrderDepth() {
 		return p.sl.GetByRank(rk).(*models.Order)
 	}
 	return nil

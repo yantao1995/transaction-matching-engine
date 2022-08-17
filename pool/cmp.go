@@ -3,6 +3,14 @@ package pool
 import "transaction-matching-engine/models"
 
 /*
+	排序优先级：
+		价格
+		时间 [ 早 -> 晚 ]
+		数量 [ 少 -> 多 ]  //能保证池内数量按序消耗之后仍然保持 [少->多] 的顺序而不用重新排序
+		id   [ 小 -> 大 ]  id肯定不相等，所以不会出现相等的key
+*/
+
+/*
 	卖单，跳表价格升序
 */
 
