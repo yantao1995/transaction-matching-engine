@@ -8,7 +8,7 @@ package models
 	FOK	无法全部立即成交就撤销 : 如果无法全部成交，订单会失效。
 */
 
-//订单挂单    订单撤销仅会传Id过来,会重复使用该结构，但会修改 TimeInForce = CANCEL
+//订单挂单    订单撤销仅会传Id/Pair过来,会重复使用该结构，但会修改 TimeInForce = CANCEL
 type Order struct {
 	Id            string `json:"id"`              //订单唯一标识
 	UserId        string `json:"user_id"`         //用户id

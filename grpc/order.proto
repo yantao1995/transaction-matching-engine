@@ -1,3 +1,32 @@
 syntax = "proto3";
 
+option go_package = "./grpc";  // protoc --go_out=plugins=grpc:. ./grpc/*.proto
 
+message AddOrderRequest {
+   string id = 1;
+   string user_id = 2;
+   string pair = 3;
+   string price = 4;
+   string amount = 5;
+   string type = 6;
+   string side = 7;
+   string time_in_force = 8;
+   int64 time_unix_milli = 9;
+}
+
+message CancelOrderRequest {
+    string id = 1;
+    string pair = 2;
+}
+
+message CommonResponse {
+    int32 code = 1;
+    string msg = 2;
+    bytes data = 3;
+}
+
+
+service MatchService {
+    rpc AddOrder (AddOrderRequest) returns (CommonResponse);
+    rpc cancelOrder (CancelOrderRequest) returns (CommonResponse);
+}
