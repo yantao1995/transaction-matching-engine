@@ -2,16 +2,20 @@ package grpc
 
 import (
 	context "context"
+	"transaction-matching-engine/engine"
 
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 )
 
 type implementedMatchServiceServer struct {
+	me *engine.MatchEngine
 }
 
-func NewImplementedMatchServiceServer() *implementedMatchServiceServer {
-	return &implementedMatchServiceServer{}
+func NewImplementedMatchServiceServer(pairs []string) *implementedMatchServiceServer {
+	return &implementedMatchServiceServer{
+		me: engine.NewMatchEngine(pairs),
+	}
 }
 
 func (*implementedMatchServiceServer) AddOrder(context.Context, *AddOrderRequest) (*CommonResponse, error) {

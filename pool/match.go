@@ -13,7 +13,7 @@ import (
 type MatchPool struct {
 	orderMap   map[string]*models.Order //存储订单池内的订单,撤销订单时
 	orderChan  chan *models.Order       //订单输入
-	Bids, Asks *pool                    //买卖盘撮合池
+	bids, asks *pool                    //买卖盘撮合池
 	tradeChan  chan *models.Trade       //订单成交
 	ctx        context.Context
 }
@@ -22,8 +22,8 @@ func NewMatchPool() *MatchPool {
 	matchPool := &MatchPool{
 		orderMap:  make(map[string]*models.Order),
 		orderChan: make(chan *models.Order, 10000),
-		Bids:      NewPool(&bidsCmp{}),
-		Asks:      NewPool(&asksCmp{}),
+		bids:      NewPool(&bidsCmp{}),
+		asks:      NewPool(&asksCmp{}),
 		tradeChan: make(chan *models.Trade, 10000),
 		ctx:       context.Background(),
 	}
@@ -68,9 +68,9 @@ func (m *MatchPool) Output() <-chan *models.Trade {
 
 //FOK	无法全部立即成交就撤销 : 如果无法全部成交，订单会失效。
 func (m *MatchPool) orderFOK(order *models.Order) {
-	rival := m.Bids
+	rival := m.bids
 	if order.Side == common.SideOrderBuy {
-		rival = m.Asks
+		rival = m.asks
 	}
 	needAmount, _ := decimal.NewFromString(order.Amount)
 	canDealAmount := m.getCanDealAmount(rival, order, order.Type)
@@ -89,9 +89,9 @@ func (m *MatchPool) orderFOK(order *models.Order) {
 
 //IOC	无法立即成交的部分就撤销 : 订单在失效前会尽量多的成交。
 func (m *MatchPool) orderIOC(order *models.Order) {
-	rival := m.Bids
+	rival := m.bids
 	if order.Side == common.SideOrderBuy {
-		rival = m.Asks
+		rival = m.asks
 	}
 	needAmount, _ := decimal.NewFromString(order.Amount)
 	canDealAmount := m.getCanDealAmount(rival, order, order.Type)
@@ -124,9 +124,9 @@ func (m *MatchPool) orderIOC(order *models.Order) {
 
 //GTC	成交为止 :订单会一直有效，直到被成交或者取消。
 func (m *MatchPool) orderGTC(order *models.Order) {
-	self, rival := m.Asks, m.Bids
+	self, rival := m.asks, m.bids
 	if order.Side == common.SideOrderBuy {
-		self, rival = m.Bids, m.Asks
+		self, rival = m.bids, m.asks
 	}
 	needAmount, _ := decimal.NewFromString(order.Amount)
 	canDealAmount := m.getCanDealAmount(rival, order, order.Type)
@@ -162,9 +162,9 @@ func (m *MatchPool) orderGTC(order *models.Order) {
 func (m *MatchPool) orderCancel(order *models.Order) {
 	order, ok := m.orderMap[order.Id]
 	if ok {
-		self := m.Asks
+		self := m.asks
 		if order.Side == common.SideOrderBuy {
-			self = m.Bids
+			self = m.bids
 		}
 		m.handleTrade(order, nil, self, common.TypeOrderCancel, 1)
 		delete(m.orderMap, order.Id)
