@@ -33,9 +33,6 @@ func NewMatchPool() *MatchPool {
 
 func (m *MatchPool) run() {
 	for orderPtr := range m.orderChan {
-		if orderPtr.Type == common.TypeOrderMarket { //市价单走IOC挂单
-			orderPtr.TimeInForce = common.TimeInForceIOC
-		}
 		switch orderPtr.TimeInForce {
 		case common.TimeInForceFOK:
 			m.orderFOK(orderPtr)
@@ -132,7 +129,7 @@ func (m *MatchPool) orderGTC(order *models.Order) {
 	canDealAmount := m.getCanDealAmount(rival, order, order.Type)
 	inputAmount := decimal.Zero
 
-	//计算需要进入撮合池数量
+	//计算无法成交的数量
 	if needAmount.Cmp(canDealAmount) == 1 { // need >= can
 		inputAmount = needAmount.Sub(canDealAmount)
 	}
@@ -150,11 +147,14 @@ func (m *MatchPool) orderGTC(order *models.Order) {
 		}
 	}
 
-	//进入撮合池
 	if inputAmount.Cmp(decimal.Zero) == 1 {
-		order.Amount = inputAmount.String() //重新生成数量
-		self.Insert(order)
-		m.orderMap[order.Id] = order
+		order.Amount = inputAmount.String()      //重新生成数量
+		if order.Type == common.TypeOrderLimit { //限价单进入撮合池
+			self.Insert(order)
+			m.orderMap[order.Id] = order
+		} else { //市价单撤单
+			m.handleTrade(order, nil, nil, common.TypeOrderCancel, 1)
+		}
 	}
 }
 

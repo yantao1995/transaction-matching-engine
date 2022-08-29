@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 	"transaction-matching-engine/grpc"
 
@@ -29,6 +28,7 @@ var (
 		PreRunE: preServerRun,
 		Run: func(cmd *cobra.Command, args []string) {
 			pairs := strings.Split(args[0], ",")
+			//engine.Load(pairs)
 			grpc.Run(pairs)
 		},
 		PostRun: postServerRun,
@@ -37,7 +37,6 @@ var (
 
 //服务启动前参数检查，数据载入
 func preServerRun(cmd *cobra.Command, args []string) error {
-	fmt.Println(args)
 	if len(args) < 1 {
 		return errors.New("缺少启动参数，需要传入交易对,使用英文逗号(,)分隔,例如\r\nBTC-USDT,ETH-USDT")
 	}
@@ -46,5 +45,5 @@ func preServerRun(cmd *cobra.Command, args []string) error {
 
 //数据 dump
 func postServerRun(cmd *cobra.Command, args []string) {
-	fmt.Println("post run")
+	//engine.Dump()
 }

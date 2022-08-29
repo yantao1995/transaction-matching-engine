@@ -11,7 +11,7 @@ import (
 
 var ServerStatus *serverStatus
 
-func init() { //主协程
+func init() {
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	ServerStatus = &serverStatus{
 		ctx:        ctx,
@@ -34,8 +34,6 @@ func (ss *serverStatus) waitSignal() {
 	<-ss.exitSignal
 	fmt.Println("系统收到退出信号...")
 	ss.cancelFunc()
-	ss.wg.Wait()
-	fmt.Println("系统已退出.")
 }
 
 func (ss *serverStatus) Context() context.Context {
@@ -48,4 +46,9 @@ func (ss *serverStatus) Add(delta int) {
 
 func (ss *serverStatus) Done() {
 	ss.wg.Done()
+}
+
+func (ss *serverStatus) Wait() {
+	ss.wg.Wait()
+	fmt.Println("系统已退出.")
 }

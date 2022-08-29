@@ -3,9 +3,7 @@ package grpc
 import (
 	context "context"
 	"transaction-matching-engine/engine"
-
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
+	"transaction-matching-engine/models"
 )
 
 type implementedMatchServiceServer struct {
@@ -14,14 +12,32 @@ type implementedMatchServiceServer struct {
 
 func NewImplementedMatchServiceServer(pairs []string) *implementedMatchServiceServer {
 	return &implementedMatchServiceServer{
-		me: engine.NewMatchEngine(pairs),
+		me: engine.GetMatchEngine(pairs),
 	}
 }
 
-func (*implementedMatchServiceServer) AddOrder(context.Context, *AddOrderRequest) (*CommonResponse, error) {
-
-	return nil, status.Errorf(codes.Unimplemented, "method AddOrder not implemented")
+func (im *implementedMatchServiceServer) AddOrder(ctx context.Context, req *AddOrderRequest) (*CommonResponse, error) {
+	//参数由业务侧校验
+	order := &models.Order{
+		Id:            req.GetId(),
+		UserId:        req.GetUserId(),
+		Pair:          req.GetPair(),
+		Price:         req.GetPrice(),
+		Amount:        req.GetAmount(),
+		Type:          req.GetType(),
+		Side:          req.GetSide(),
+		TimeInForce:   req.GetTimeInForce(),
+		TimeUnixMilli: req.GetTimeUnixMilli(),
+	}
+	im.me.AddOrder(order)
+	return &CommonResponse{}, nil
 }
-func (*implementedMatchServiceServer) CancelOrder(context.Context, *CancelOrderRequest) (*CommonResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CancelOrder not implemented")
+
+func (im *implementedMatchServiceServer) CancelOrder(ctx context.Context, req *CancelOrderRequest) (*CommonResponse, error) {
+	order := &models.Order{
+		Id:   req.GetId(),
+		Pair: req.GetPair(),
+	}
+	im.me.CancelOrder(order)
+	return &CommonResponse{}, nil
 }

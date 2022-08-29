@@ -50,11 +50,10 @@ func Run(pairs []string) {
 	if err := server.gs.Serve(lst); err != nil {
 		panic("rpc Serve err:" + err.Error())
 	}
-
+	fmt.Println("rpc stopped.")
 }
 
 func gracefulStop(server *grpcServer) {
 	<-server.ctx.Done()
-	fmt.Println("rpc stopped.")
 	server.gs.GracefulStop()
 }
