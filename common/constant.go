@@ -6,21 +6,23 @@ import (
 )
 
 var (
-	orderAtomicSource     int32 = 0 //订单原子自增量
-	ServerCancelErr       error = errors.New("server done")
-	OrderHandleTimeoutErr error = errors.New("order handle timeout")
+	orderAtomicSource     int32 = 0                                               //订单原子自增量
+	ServerCancelErr       error = errors.New("server done")                       //系统正在关闭
+	OrderHandleTimeoutErr error = errors.New("order handle timeout")              //订单处理超时
+	NotOpenMatchPoolErr   error = errors.New("this pair not open the match pool") //未配置交易撮合池
 )
 
 const (
-	int32MaxValueRotation int32  = 1 << 20 //自增归零量    //1048576   fmt.Printf("%07d", 10) 补齐
-	TypeOrderCancel       string = "cancel"
-	SideOrderBuy          string = "buy"
-	SideOrderSell         string = "sell"
-	TypeOrderLimit        string = "limit"
-	TypeOrderMarket       string = "market"
-	TimeInForceGTC        string = "GTC"
-	TimeInForceIOC        string = "IOC"
-	TimeInForceFOK        string = "FOK"
+	int32MaxValueRotation int32 = 1 << 20 //自增归零量    //1048576   fmt.Printf("%07d", 10) 补齐
+	// 订单类型基础
+	TypeOrderCancel string = "cancel"
+	SideOrderBuy    string = "buy"
+	SideOrderSell   string = "sell"
+	TypeOrderLimit  string = "limit"
+	TypeOrderMarket string = "market"
+	TimeInForceGTC  string = "GTC"
+	TimeInForceIOC  string = "IOC"
+	TimeInForceFOK  string = "FOK"
 )
 
 //获取原子自增值

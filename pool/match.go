@@ -10,29 +10,51 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+//撮合池
 type MatchPool struct {
-	orderMap   map[string]*models.Order //存储订单池内的订单,撤销订单时
-	orderChan  chan *models.Order       //订单输入
-	bids, asks *pool                    //买卖盘撮合池
-	tradeChan  chan *models.Trade       //订单成交
-	ctx        context.Context
+	orderMap     map[string]*models.Order //存储订单池内的订单,撤销订单时
+	orderChan    chan *models.Order       //订单输入
+	bids, asks   *pool                    //买卖盘订单池
+	tradeChan    chan *models.Trade       //订单成交
+	ctx          context.Context
+	cancelFunc   context.CancelFunc
+	deepSnapshot *deepSnapshot
 }
 
 func NewMatchPool() *MatchPool {
+	ctx, cancelFunc := context.WithCancel(common.ServerStatus.Context())
 	matchPool := &MatchPool{
-		orderMap:  make(map[string]*models.Order),
-		orderChan: make(chan *models.Order, 10000),
-		bids:      NewPool(&bidsCmp{}),
-		asks:      NewPool(&asksCmp{}),
-		tradeChan: make(chan *models.Trade, 10000),
-		ctx:       context.Background(),
+		orderMap:     make(map[string]*models.Order),
+		orderChan:    make(chan *models.Order, 10000),
+		bids:         NewPool(&bidsCmp{}),
+		asks:         NewPool(&asksCmp{}),
+		tradeChan:    make(chan *models.Trade, 10000),
+		ctx:          ctx,
+		cancelFunc:   cancelFunc,
+		deepSnapshot: newDeepSnapshot(),
 	}
+	go matchPool.listenSignal()
 	go matchPool.run()
 	return matchPool
 }
 
+/*
+	业务相关  单线程模式
+*/
+
+//接收退出信号
+func (m *MatchPool) listenSignal() {
+	<-m.ctx.Done()
+	close(m.orderChan)
+}
+
+//运行
 func (m *MatchPool) run() {
+	common.ServerStatus.Add(1)
+	defer common.ServerStatus.Done()
 	for orderPtr := range m.orderChan {
+		m.deepSnapshot.queryLock.Lock()
+		m.deepSnapshot.hasNewOrder = true
 		switch orderPtr.TimeInForce {
 		case common.TimeInForceFOK:
 			m.orderFOK(orderPtr)
@@ -43,22 +65,38 @@ func (m *MatchPool) run() {
 		default: //默认Cancel
 			m.orderCancel(orderPtr)
 		}
+		m.deepSnapshot.queryLock.Unlock()
 	}
 }
 
-//订单输入
+//查询深度
+func (m *MatchPool) QueryDeep(pair string) ([][3]string, [][3]string) {
+	if m.deepSnapshot.IsNeedUpdate() {
+		m.deepSnapshot.queryLock.Lock()
+		if m.deepSnapshot.IsNeedUpdate() { //可能已经被上一个请求更新了
+			m.deepSnapshot.Update(m.GetOrders())
+		}
+		m.deepSnapshot.queryLock.Unlock()
+	}
+	return m.deepSnapshot.GetSnapshot()
+}
+
+//订单输入  异步
 func (m *MatchPool) Input(order *models.Order) error {
 	select {
 	case <-m.ctx.Done():
 		return common.ServerCancelErr
-	case m.orderChan <- order:
-		return nil
-	case <-time.After(time.Second):
-		return common.OrderHandleTimeoutErr
+	default:
+		select {
+		case m.orderChan <- order:
+			return nil
+		case <-time.After(time.Second):
+			return common.OrderHandleTimeoutErr
+		}
 	}
 }
 
-//成交输出
+//成交输出  异步
 func (m *MatchPool) Output() <-chan *models.Trade {
 	return m.tradeChan
 }
@@ -191,7 +229,7 @@ func (m *MatchPool) getCanDealAmount(p *pool, order *models.Order, orderType str
 	return canDeal
 }
 
-//处理成交/撤销 trade     pl为对手盘撮合池
+//处理成交/撤销 trade     pl为对手盘订单池
 func (m *MatchPool) handleTrade(taker, maker *models.Order, pl *pool, tradeType string, rk int) {
 	nowUnixMilli := time.Now().UnixMilli()
 	trade := &models.Trade{
@@ -227,5 +265,27 @@ func (m *MatchPool) handleTrade(taker, maker *models.Order, pl *pool, tradeType 
 			pl.UpdateDataByDepth(rk, maker)
 		}
 	}
+	common.ServerStatus.Add(1)
 	m.tradeChan <- trade
+}
+
+/*
+	持久化相关
+*/
+
+//获取订单池   (bids,asks)
+func (m *MatchPool) GetOrders() ([]*models.Order, []*models.Order) {
+	return m.bids.GetAllOrders(), m.asks.GetAllOrders()
+}
+
+//写入订单池
+func (m *MatchPool) SetOrders(bids, asks []*models.Order) {
+	for k := range bids {
+		m.bids.Insert(bids[k])
+		m.orderMap[bids[k].Id] = bids[k]
+	}
+	for k := range asks {
+		m.asks.Insert(asks[k])
+		m.orderMap[asks[k].Id] = asks[k]
+	}
 }

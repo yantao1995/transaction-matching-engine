@@ -25,8 +25,12 @@ message CommonResponse {
     bytes data = 3;
 }
 
+message QueryDeepRequest {
+    string pair = 1;
+}
 
 service MatchService {
     rpc AddOrder (AddOrderRequest) returns (CommonResponse);
-    rpc cancelOrder (CancelOrderRequest) returns (CommonResponse);
+    rpc CancelOrder (CancelOrderRequest) returns (CommonResponse);
+    rpc QueryDeep (QueryDeepRequest) returns (CommonResponse);
 }

@@ -253,6 +253,53 @@ func (x *CommonResponse) GetData() []byte {
 	return nil
 }
 
+type QueryDeepRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Pair string `protobuf:"bytes,1,opt,name=pair,proto3" json:"pair,omitempty"`
+}
+
+func (x *QueryDeepRequest) Reset() {
+	*x = QueryDeepRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_grpc_order_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *QueryDeepRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QueryDeepRequest) ProtoMessage() {}
+
+func (x *QueryDeepRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_grpc_order_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QueryDeepRequest.ProtoReflect.Descriptor instead.
+func (*QueryDeepRequest) Descriptor() ([]byte, []int) {
+	return file_grpc_order_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *QueryDeepRequest) GetPair() string {
+	if x != nil {
+		return x.Pair
+	}
+	return ""
+}
+
 var File_grpc_order_proto protoreflect.FileDescriptor
 
 var file_grpc_order_proto_rawDesc = []byte{
@@ -280,16 +327,21 @@ var file_grpc_order_proto_rawDesc = []byte{
 	0x65, 0x12, 0x12, 0x0a, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52,
 	0x04, 0x63, 0x6f, 0x64, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x6d, 0x73, 0x67, 0x18, 0x02, 0x20, 0x01,
 	0x28, 0x09, 0x52, 0x03, 0x6d, 0x73, 0x67, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18,
-	0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x32, 0x72, 0x0a, 0x0c, 0x4d,
-	0x61, 0x74, 0x63, 0x68, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x2d, 0x0a, 0x08, 0x41,
-	0x64, 0x64, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x12, 0x10, 0x2e, 0x41, 0x64, 0x64, 0x4f, 0x72, 0x64,
-	0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0f, 0x2e, 0x43, 0x6f, 0x6d, 0x6d,
-	0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x33, 0x0a, 0x0b, 0x63, 0x61,
-	0x6e, 0x63, 0x65, 0x6c, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x12, 0x13, 0x2e, 0x43, 0x61, 0x6e, 0x63,
-	0x65, 0x6c, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0f,
-	0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42,
-	0x08, 0x5a, 0x06, 0x2e, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x22, 0x26, 0x0a, 0x10, 0x51,
+	0x75, 0x65, 0x72, 0x79, 0x44, 0x65, 0x65, 0x70, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
+	0x12, 0x0a, 0x04, 0x70, 0x61, 0x69, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70,
+	0x61, 0x69, 0x72, 0x32, 0xa3, 0x01, 0x0a, 0x0c, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x53, 0x65, 0x72,
+	0x76, 0x69, 0x63, 0x65, 0x12, 0x2d, 0x0a, 0x08, 0x41, 0x64, 0x64, 0x4f, 0x72, 0x64, 0x65, 0x72,
+	0x12, 0x10, 0x2e, 0x41, 0x64, 0x64, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x1a, 0x0f, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x33, 0x0a, 0x0b, 0x43, 0x61, 0x6e, 0x63, 0x65, 0x6c, 0x4f, 0x72, 0x64,
+	0x65, 0x72, 0x12, 0x13, 0x2e, 0x43, 0x61, 0x6e, 0x63, 0x65, 0x6c, 0x4f, 0x72, 0x64, 0x65, 0x72,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0f, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2f, 0x0a, 0x09, 0x51, 0x75, 0x65, 0x72,
+	0x79, 0x44, 0x65, 0x65, 0x70, 0x12, 0x11, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x44, 0x65, 0x65,
+	0x70, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0f, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f,
+	0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x08, 0x5a, 0x06, 0x2e, 0x2f, 0x67,
+	0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -304,19 +356,22 @@ func file_grpc_order_proto_rawDescGZIP() []byte {
 	return file_grpc_order_proto_rawDescData
 }
 
-var file_grpc_order_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_grpc_order_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_grpc_order_proto_goTypes = []interface{}{
 	(*AddOrderRequest)(nil),    // 0: AddOrderRequest
 	(*CancelOrderRequest)(nil), // 1: CancelOrderRequest
 	(*CommonResponse)(nil),     // 2: CommonResponse
+	(*QueryDeepRequest)(nil),   // 3: QueryDeepRequest
 }
 var file_grpc_order_proto_depIdxs = []int32{
 	0, // 0: MatchService.AddOrder:input_type -> AddOrderRequest
-	1, // 1: MatchService.cancelOrder:input_type -> CancelOrderRequest
-	2, // 2: MatchService.AddOrder:output_type -> CommonResponse
-	2, // 3: MatchService.cancelOrder:output_type -> CommonResponse
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	1, // 1: MatchService.CancelOrder:input_type -> CancelOrderRequest
+	3, // 2: MatchService.QueryDeep:input_type -> QueryDeepRequest
+	2, // 3: MatchService.AddOrder:output_type -> CommonResponse
+	2, // 4: MatchService.CancelOrder:output_type -> CommonResponse
+	2, // 5: MatchService.QueryDeep:output_type -> CommonResponse
+	3, // [3:6] is the sub-list for method output_type
+	0, // [0:3] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -364,6 +419,18 @@ func file_grpc_order_proto_init() {
 				return nil
 			}
 		}
+		file_grpc_order_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*QueryDeepRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -371,7 +438,7 @@ func file_grpc_order_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_grpc_order_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -399,6 +466,7 @@ const _ = grpc.SupportPackageIsVersion6
 type MatchServiceClient interface {
 	AddOrder(ctx context.Context, in *AddOrderRequest, opts ...grpc.CallOption) (*CommonResponse, error)
 	CancelOrder(ctx context.Context, in *CancelOrderRequest, opts ...grpc.CallOption) (*CommonResponse, error)
+	QueryDeep(ctx context.Context, in *QueryDeepRequest, opts ...grpc.CallOption) (*CommonResponse, error)
 }
 
 type matchServiceClient struct {
@@ -420,7 +488,16 @@ func (c *matchServiceClient) AddOrder(ctx context.Context, in *AddOrderRequest, 
 
 func (c *matchServiceClient) CancelOrder(ctx context.Context, in *CancelOrderRequest, opts ...grpc.CallOption) (*CommonResponse, error) {
 	out := new(CommonResponse)
-	err := c.cc.Invoke(ctx, "/MatchService/cancelOrder", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/MatchService/CancelOrder", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *matchServiceClient) QueryDeep(ctx context.Context, in *QueryDeepRequest, opts ...grpc.CallOption) (*CommonResponse, error) {
+	out := new(CommonResponse)
+	err := c.cc.Invoke(ctx, "/MatchService/QueryDeep", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -431,6 +508,7 @@ func (c *matchServiceClient) CancelOrder(ctx context.Context, in *CancelOrderReq
 type MatchServiceServer interface {
 	AddOrder(context.Context, *AddOrderRequest) (*CommonResponse, error)
 	CancelOrder(context.Context, *CancelOrderRequest) (*CommonResponse, error)
+	QueryDeep(context.Context, *QueryDeepRequest) (*CommonResponse, error)
 }
 
 // UnimplementedMatchServiceServer can be embedded to have forward compatible implementations.
@@ -442,6 +520,9 @@ func (*UnimplementedMatchServiceServer) AddOrder(context.Context, *AddOrderReque
 }
 func (*UnimplementedMatchServiceServer) CancelOrder(context.Context, *CancelOrderRequest) (*CommonResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelOrder not implemented")
+}
+func (*UnimplementedMatchServiceServer) QueryDeep(context.Context, *QueryDeepRequest) (*CommonResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryDeep not implemented")
 }
 
 func RegisterMatchServiceServer(s *grpc.Server, srv MatchServiceServer) {
@@ -484,6 +565,24 @@ func _MatchService_CancelOrder_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MatchService_QueryDeep_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryDeepRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MatchServiceServer).QueryDeep(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/MatchService/QueryDeep",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MatchServiceServer).QueryDeep(ctx, req.(*QueryDeepRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _MatchService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "MatchService",
 	HandlerType: (*MatchServiceServer)(nil),
@@ -493,8 +592,12 @@ var _MatchService_serviceDesc = grpc.ServiceDesc{
 			Handler:    _MatchService_AddOrder_Handler,
 		},
 		{
-			MethodName: "cancelOrder",
+			MethodName: "CancelOrder",
 			Handler:    _MatchService_CancelOrder_Handler,
+		},
+		{
+			MethodName: "QueryDeep",
+			Handler:    _MatchService_QueryDeep_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

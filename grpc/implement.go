@@ -2,6 +2,9 @@ package grpc
 
 import (
 	context "context"
+	"encoding/json"
+	"time"
+	"transaction-matching-engine/common"
 	"transaction-matching-engine/engine"
 	"transaction-matching-engine/models"
 )
@@ -10,14 +13,28 @@ type implementedMatchServiceServer struct {
 	me *engine.MatchEngine
 }
 
+//参数由业务侧校验
 func NewImplementedMatchServiceServer(pairs []string) *implementedMatchServiceServer {
 	return &implementedMatchServiceServer{
 		me: engine.GetMatchEngine(pairs),
 	}
 }
 
+func (im *implementedMatchServiceServer) handleErr(err error) *CommonResponse {
+	resp := &CommonResponse{}
+	if err != nil {
+		switch err {
+		case common.ServerCancelErr, common.OrderHandleTimeoutErr:
+			resp.Code = 500
+		default:
+			resp.Code = 400
+		}
+		resp.Msg = err.Error()
+	}
+	return resp
+}
+
 func (im *implementedMatchServiceServer) AddOrder(ctx context.Context, req *AddOrderRequest) (*CommonResponse, error) {
-	//参数由业务侧校验
 	order := &models.Order{
 		Id:            req.GetId(),
 		UserId:        req.GetUserId(),
@@ -29,8 +46,7 @@ func (im *implementedMatchServiceServer) AddOrder(ctx context.Context, req *AddO
 		TimeInForce:   req.GetTimeInForce(),
 		TimeUnixMilli: req.GetTimeUnixMilli(),
 	}
-	im.me.AddOrder(order)
-	return &CommonResponse{}, nil
+	return im.handleErr(im.me.AddOrder(order)), nil
 }
 
 func (im *implementedMatchServiceServer) CancelOrder(ctx context.Context, req *CancelOrderRequest) (*CommonResponse, error) {
@@ -38,6 +54,20 @@ func (im *implementedMatchServiceServer) CancelOrder(ctx context.Context, req *C
 		Id:   req.GetId(),
 		Pair: req.GetPair(),
 	}
-	im.me.CancelOrder(order)
-	return &CommonResponse{}, nil
+	return im.handleErr(im.me.CancelOrder(order)), nil
+}
+
+func (im *implementedMatchServiceServer) QueryDeep(ctx context.Context, req *QueryDeepRequest) (*CommonResponse, error) {
+	bids, asks, err := im.me.QueryDeep(req.GetPair())
+	resp := im.handleErr(err)
+	if err == nil {
+		data := models.Deep{
+			Pair:          req.GetPair(),
+			TimeUnixMilli: time.Now().UnixMilli(),
+			Bids:          bids,
+			Asks:          asks,
+		}
+		resp.Data, _ = json.Marshal(data)
+	}
+	return resp, nil
 }

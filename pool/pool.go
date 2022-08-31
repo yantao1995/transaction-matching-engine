@@ -31,12 +31,12 @@ func (p *pool) generateSortKey(order *models.Order) *models.SortKey {
 	}
 }
 
-//写入撮合池
+//写入订单池
 func (p *pool) Insert(order *models.Order) {
 	p.sl.Insert(p.generateSortKey(order), order)
 }
 
-//获取撮合池内订单深度
+//获取订单池内订单深度
 func (p *pool) GetOrderDepth() int {
 	return p.sl.GetLength()
 }
@@ -65,10 +65,20 @@ func (p *pool) DeleteByOrder(order *models.Order) bool {
 	return false
 }
 
-//获取撮合池指定档位的数据
+//获取订单池指定档位的数据
 func (p *pool) GetDepthData(rk int) *models.Order {
 	if rk <= p.GetOrderDepth() {
 		return p.sl.GetByRank(rk).(*models.Order)
 	}
 	return nil
+}
+
+//获取订单池内所有订单
+func (p *pool) GetAllOrders() []*models.Order {
+	all := p.sl.GetByRankRange(1, p.sl.GetLength())
+	orders := make([]*models.Order, len(all))
+	for k := range all {
+		orders[k] = all[k].(*models.Order)
+	}
+	return orders
 }
