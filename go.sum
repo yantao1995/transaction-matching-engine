@@ -81,8 +81,8 @@ github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81P
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/yantao1995/ds v1.1.0 h1:rYH57KGj+S5HlSnazcFSdBUBh2KuvG6mXHcCsvEc1XY=
-github.com/yantao1995/ds v1.1.0/go.mod h1:Yel+hmq4pbk0VW7MTqXOmD20Jjm2X9tDNJQMKxjZunM=
+github.com/yantao1995/ds v1.1.1 h1:dVwHgUPbhEl/fHrvekg9GkEOj3YRBef0sfhZ6/C/JCQ=
+github.com/yantao1995/ds v1.1.1/go.mod h1:Yel+hmq4pbk0VW7MTqXOmD20Jjm2X9tDNJQMKxjZunM=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 go.opentelemetry.io/proto/otlp v0.7.0/go.mod h1:PqfVotwruBrMGOCsRd/89rSnXhoiJIqeYNgFYFoEGnI=

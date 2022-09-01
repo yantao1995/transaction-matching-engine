@@ -36,7 +36,7 @@ func newDeepSnapshot() *deepSnapshot {
 		lastUpdateTimeMilli:               0,
 		snapshotUpdateTimeMillisecondBase: 200,
 		increaseFactor:                    10000,
-		hasNewOrder:                       false,
+		hasNewOrder:                       true,
 	}
 }
 
