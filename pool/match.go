@@ -10,7 +10,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-//撮合池
+// 撮合池
 type MatchPool struct {
 	orderMap     map[string]*models.Order //存储订单池内的订单,撤销订单时
 	orderChan    chan *models.Order       //订单输入
@@ -19,10 +19,13 @@ type MatchPool struct {
 	ctx          context.Context
 	cancelFunc   context.CancelFunc
 	deepSnapshot *deepSnapshot
+	timer        *time.Timer   //超时控制
+	timeout      time.Duration //超时时间
 }
 
 func NewMatchPool() *MatchPool {
 	ctx, cancelFunc := context.WithCancel(common.ServerStatus.Context())
+	timeout := time.Second
 	matchPool := &MatchPool{
 		orderMap:     make(map[string]*models.Order),
 		orderChan:    make(chan *models.Order, 10000),
@@ -32,6 +35,8 @@ func NewMatchPool() *MatchPool {
 		ctx:          ctx,
 		cancelFunc:   cancelFunc,
 		deepSnapshot: newDeepSnapshot(),
+		timer:        time.NewTimer(timeout),
+		timeout:      timeout,
 	}
 	go matchPool.listenSignal()
 	go matchPool.run()
@@ -42,13 +47,13 @@ func NewMatchPool() *MatchPool {
 	业务相关  单线程模式
 */
 
-//接收退出信号
+// 接收退出信号
 func (m *MatchPool) listenSignal() {
 	<-m.ctx.Done()
 	close(m.orderChan)
 }
 
-//运行
+// 运行
 func (m *MatchPool) run() {
 	common.ServerStatus.Add(1)
 	defer common.ServerStatus.Done()
@@ -69,7 +74,7 @@ func (m *MatchPool) run() {
 	}
 }
 
-//查询深度
+// 查询深度
 func (m *MatchPool) QueryDeep(pair string) ([][3]string, [][3]string) {
 	if m.deepSnapshot.IsNeedUpdate() {
 		m.deepSnapshot.queryLock.Lock()
@@ -81,27 +86,28 @@ func (m *MatchPool) QueryDeep(pair string) ([][3]string, [][3]string) {
 	return m.deepSnapshot.GetSnapshot()
 }
 
-//订单输入  异步
+// 订单输入  异步
 func (m *MatchPool) Input(order *models.Order) error {
 	select {
 	case <-m.ctx.Done():
 		return common.ServerCancelErr
 	default:
+		m.timer.Reset(m.timeout)
 		select {
 		case m.orderChan <- order:
 			return nil
-		case <-time.After(time.Second):
+		case <-m.timer.C:
 			return common.OrderHandleTimeoutErr
 		}
 	}
 }
 
-//成交输出  异步
+// 成交输出  异步
 func (m *MatchPool) Output() <-chan *models.Trade {
 	return m.tradeChan
 }
 
-//FOK	无法全部立即成交就撤销 : 如果无法全部成交，订单会失效。
+// FOK	无法全部立即成交就撤销 : 如果无法全部成交，订单会失效。
 func (m *MatchPool) orderFOK(order *models.Order) {
 	rival := m.bids
 	if order.Side == common.SideOrderBuy {
@@ -122,7 +128,7 @@ func (m *MatchPool) orderFOK(order *models.Order) {
 	}
 }
 
-//IOC	无法立即成交的部分就撤销 : 订单在失效前会尽量多的成交。
+// IOC	无法立即成交的部分就撤销 : 订单在失效前会尽量多的成交。
 func (m *MatchPool) orderIOC(order *models.Order) {
 	rival := m.bids
 	if order.Side == common.SideOrderBuy {
@@ -157,7 +163,7 @@ func (m *MatchPool) orderIOC(order *models.Order) {
 	}
 }
 
-//GTC	成交为止 :订单会一直有效，直到被成交或者取消。
+// GTC	成交为止 :订单会一直有效，直到被成交或者取消。
 func (m *MatchPool) orderGTC(order *models.Order) {
 	self, rival := m.asks, m.bids
 	if order.Side == common.SideOrderBuy {
@@ -196,7 +202,7 @@ func (m *MatchPool) orderGTC(order *models.Order) {
 	}
 }
 
-//Cancel订单
+// Cancel订单
 func (m *MatchPool) orderCancel(order *models.Order) {
 	order, ok := m.orderMap[order.Id]
 	if ok {
@@ -210,7 +216,7 @@ func (m *MatchPool) orderCancel(order *models.Order) {
 	}
 }
 
-//获取能成交的数量   side,price为taker的状态
+// 获取能成交的数量   side,price为taker的状态
 func (m *MatchPool) getCanDealAmount(p *pool, order *models.Order, orderType string) decimal.Decimal {
 	canDeal := decimal.NewFromInt(0)
 	orderPrice, _ := decimal.NewFromString(order.Price)
@@ -229,7 +235,7 @@ func (m *MatchPool) getCanDealAmount(p *pool, order *models.Order, orderType str
 	return canDeal
 }
 
-//处理成交/撤销 trade     pl为对手盘订单池
+// 处理成交/撤销 trade     pl为对手盘订单池
 func (m *MatchPool) handleTrade(taker, maker *models.Order, pl *pool, tradeType string, rk int) {
 	nowUnixMilli := time.Now().UnixMilli()
 	trade := &models.Trade{
@@ -273,12 +279,12 @@ func (m *MatchPool) handleTrade(taker, maker *models.Order, pl *pool, tradeType 
 	持久化相关
 */
 
-//获取订单池   (bids,asks)
+// 获取订单池   (bids,asks)
 func (m *MatchPool) GetOrders() ([]*models.Order, []*models.Order) {
 	return m.bids.GetAllOrders(), m.asks.GetAllOrders()
 }
 
-//写入订单池
+// 写入订单池
 func (m *MatchPool) SetOrders(bids, asks []*models.Order) {
 	for k := range bids {
 		m.bids.Insert(bids[k])
