@@ -11,10 +11,13 @@ import (
 
 var (
 	filePathPrefix = "./dump/"
+	bidsName       = "/bids.json"
+	asksName       = "/asks.json"
+	pairName       = "pairs.json"
 )
 
 //序列化
-func serialize(data []*models.Order) []byte {
+func serialize(data interface{}) []byte {
 	bts, _ := json.Marshal(data)
 	return bts
 }
@@ -30,21 +33,25 @@ func deserialize(bts []byte) []*models.Order {
 func Dump() {
 	eg := GetMatchEngine(nil)
 	os.MkdirAll(filePathPrefix, fs.ModeDir)
+	pairs := []string{} //记录本次启动的pairs
 	for pair, pool := range eg.pools {
+		pairs = append(pairs, pair)
 		bids, asks := pool.GetOrders()
-		save(filePathPrefix+pair+"_bids", bids)
-		save(filePathPrefix+pair+"_asks", asks)
+		os.MkdirAll(filePathPrefix+pair, fs.ModeDir)
+		save(filePathPrefix+pair+bidsName, bids)
+		save(filePathPrefix+pair+asksName, asks)
 	}
+	save(filePathPrefix+pairName, pairs)
 }
 
 //存储
-func save(filePath string, orders []*models.Order) {
+func save(filePath string, data interface{}) {
 	os.Remove(filePath)
 	file, err := os.Create(filePath)
 	if err != nil {
 		panic("创建文件失败" + err.Error())
 	}
-	file.Write(serialize(orders))
+	file.Write(serialize(data))
 }
 
 //加载		只加载pairs内的文件
@@ -54,7 +61,7 @@ func Load(pairs []string) {
 		if os.IsNotExist(err) {
 			return
 		}
-		panic("dump文件读取异常:" + err.Error())
+		panic(filePathPrefix + "内的dump文件读取异常:" + err.Error())
 	}
 	if len(files) == 0 {
 		return
@@ -65,30 +72,48 @@ func Load(pairs []string) {
 		needPair[pairs[k]]++
 	}
 	for _, info := range files {
-		nameSlice := strings.Split(info.Name(), "_")
-		if len(nameSlice) != 2 {
-			panic("文件名异常")
+		if info.IsDir() {
+			needPair[info.Name()]++
 		}
-		needPair[nameSlice[0]]++
 	}
-	//包含 bids 和 asks 的才载入
+	//包含 启动pair && 文件存在 的才载入
 	for pair, count := range needPair {
-		if count == 3 {
-			eg.pools[pair].SetOrders(read(filePathPrefix+pair+"_bids"), read(filePathPrefix+pair+"_asks"))
+		if count == 2 {
+			eg.pools[pair].SetOrders(readOrders(filePathPrefix+pair+bidsName), readOrders(filePathPrefix+pair+asksName))
 			fmt.Println("成功加载文件：", pair)
 		}
 	}
 }
 
-func read(filePath string) []*models.Order {
+//读取存储的订单数据
+func readOrders(filePath string) []*models.Order {
 	bts, err := os.ReadFile(filePath)
 	if err != nil {
-		panic("读取文件失败" + err.Error())
+		panic(filePath + "读取文件失败" + err.Error())
 	}
 	data := []*models.Order{}
 	err = json.Unmarshal(bts, &data)
 	if err != nil {
-		panic("解析文件内容失败" + filePath)
+		panic(filePath + "解析文件内容失败" + filePath)
+	}
+	return data
+}
+
+//记录上次启动的pair
+func ReadPairs() []string {
+	filePath := filePathPrefix + pairName
+	data := []string{}
+	bts, err := os.ReadFile(filePath)
+	if err != nil {
+		fmt.Println(filePath + "读取文件失败" + err.Error())
+		return data
+	}
+	err = json.Unmarshal(bts, &data)
+	if err != nil {
+		panic(filePath + "解析文件内容失败" + filePath)
+	}
+	for k := range data {
+		data[k] = strings.ToUpper(data[k])
 	}
 	return data
 }

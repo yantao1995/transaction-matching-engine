@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"errors"
+	"fmt"
 	"strings"
 	"transaction-matching-engine/engine"
 	"transaction-matching-engine/grpc"
@@ -24,11 +24,19 @@ var (
 	}
 
 	startGrpcCmd = &cobra.Command{
-		Use:     "grpc",
-		Short:   "启动grpc服务",
-		PreRunE: preServerRun,
+		Use:    "grpc",
+		Short:  "启动grpc服务",
+		PreRun: preServerRun,
 		Run: func(cmd *cobra.Command, args []string) {
-			pairs := strings.Split(strings.ToUpper(args[0]), ",")
+			var pairs []string
+			if len(args) > 0 {
+				pairs = strings.Split(strings.ToUpper(args[0]), ",")
+			} else {
+				pairs = engine.ReadPairs()
+				if len(pairs) == 0 {
+					panic("转储的交易对文件不存在或无交易对")
+				}
+			}
 			engine.Load(pairs)
 			grpc.Run(pairs)
 		},
@@ -36,9 +44,8 @@ var (
 )
 
 //服务启动前参数检查，数据载入
-func preServerRun(cmd *cobra.Command, args []string) error {
-	if len(args) < 1 {
-		return errors.New("缺少启动参数，需要传入交易对,使用英文逗号(,)分隔,例如\r\nBTC-USDT,ETH-USDT")
+func preServerRun(cmd *cobra.Command, args []string) {
+	if len(args) == 0 {
+		fmt.Println("未在启动参数指定交易对,例： [start x服务 BTC-USDT] \r\n交易对将从配置文件加载...")
 	}
-	return nil
 }

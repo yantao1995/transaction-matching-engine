@@ -3,12 +3,14 @@ package grpc
 import (
 	context "context"
 	"encoding/json"
+	"strings"
 	"time"
 	"transaction-matching-engine/common"
 	"transaction-matching-engine/engine"
 	"transaction-matching-engine/models"
 )
 
+//交易对不区分大小写
 type implementedMatchServiceServer struct {
 	me *engine.MatchEngine
 }
@@ -38,7 +40,7 @@ func (im *implementedMatchServiceServer) AddOrder(ctx context.Context, req *AddO
 	order := &models.Order{
 		Id:            req.GetId(),
 		UserId:        req.GetUserId(),
-		Pair:          req.GetPair(),
+		Pair:          strings.ToUpper(req.GetPair()),
 		Price:         req.GetPrice(),
 		Amount:        req.GetAmount(),
 		Type:          req.GetType(),
@@ -52,12 +54,13 @@ func (im *implementedMatchServiceServer) AddOrder(ctx context.Context, req *AddO
 func (im *implementedMatchServiceServer) CancelOrder(ctx context.Context, req *CancelOrderRequest) (*CommonResponse, error) {
 	order := &models.Order{
 		Id:   req.GetId(),
-		Pair: req.GetPair(),
+		Pair: strings.ToUpper(req.GetPair()),
 	}
 	return im.handleErr(im.me.CancelOrder(order)), nil
 }
 
 func (im *implementedMatchServiceServer) QueryDeep(ctx context.Context, req *QueryDeepRequest) (*CommonResponse, error) {
+	req.Pair = strings.ToUpper(req.GetPair())
 	bids, asks, err := im.me.QueryDeep(req.GetPair())
 	resp := im.handleErr(err)
 	if err == nil {
