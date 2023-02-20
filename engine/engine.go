@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -14,7 +15,7 @@ var (
 	matchEngine *MatchEngine
 )
 
-//撮合引擎
+// 撮合引擎
 type MatchEngine struct {
 	pools map[string]*pool.MatchPool //每个交易对一个撮合池
 }
@@ -35,7 +36,7 @@ func GetMatchEngine(pairs []string) *MatchEngine {
 	return matchEngine
 }
 
-//输出所有的交易对
+// 输出所有的交易对
 func (me *MatchEngine) printPairs() {
 	pairs := make([]string, 0, len(me.pools))
 	for pair := range me.pools {
@@ -44,7 +45,7 @@ func (me *MatchEngine) printPairs() {
 	fmt.Printf("撮合池内支持的交易对: [%s]\n", strings.Join(pairs, ","))
 }
 
-//订阅成交   //推送至消息队列供业务测消费&生成k线 ---
+// 订阅成交   //推送至消息队列供业务测消费&生成k线 ---
 func (me *MatchEngine) subscribeTrade() {
 	for pair, mp := range me.pools {
 		go func(pair string, mp *pool.MatchPool) {
@@ -60,25 +61,25 @@ func (me *MatchEngine) subscribeTrade() {
 	}
 }
 
-//挂单
-func (me *MatchEngine) AddOrder(order *models.Order) error {
+// 挂单
+func (me *MatchEngine) AddOrder(ctx context.Context, order *models.Order) error {
 	if pool, ok := me.pools[order.Pair]; ok {
-		return pool.Input(order)
+		return pool.Input(ctx, order)
 	}
 	fmt.Println("[挂单]异常订单,id: ", order.Id, " 交易对: ", order.Pair)
 	return common.NotOpenMatchPoolErr
 }
 
-//撤单
-func (me *MatchEngine) CancelOrder(order *models.Order) error {
+// 撤单
+func (me *MatchEngine) CancelOrder(ctx context.Context, order *models.Order) error {
 	if pool, ok := me.pools[order.Pair]; ok {
-		return pool.Input(order)
+		return pool.Input(ctx, order)
 	}
 	fmt.Println("[撤单]异常订单,id: ", order.Id, " 交易对: ", order.Pair)
 	return common.NotOpenMatchPoolErr
 }
 
-//查询深度
+// 查询深度
 func (me *MatchEngine) QueryDeep(pair string) ([][3]string, [][3]string, error) {
 	if pool, ok := me.pools[pair]; ok {
 		bids, asks := pool.QueryDeep(pair)

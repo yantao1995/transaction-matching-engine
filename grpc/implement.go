@@ -10,15 +10,17 @@ import (
 	"transaction-matching-engine/models"
 )
 
-//交易对不区分大小写
+// 交易对不区分大小写
 type implementedMatchServiceServer struct {
-	me *engine.MatchEngine
+	me      *engine.MatchEngine
+	timeout time.Duration
 }
 
-//参数由业务侧校验
+// 参数由业务侧校验
 func NewImplementedMatchServiceServer(pairs []string) *implementedMatchServiceServer {
 	return &implementedMatchServiceServer{
-		me: engine.GetMatchEngine(pairs),
+		me:      engine.GetMatchEngine(pairs),
+		timeout: time.Second,
 	}
 }
 
@@ -48,7 +50,9 @@ func (im *implementedMatchServiceServer) AddOrder(ctx context.Context, req *AddO
 		TimeInForce:   req.GetTimeInForce(),
 		TimeUnixMilli: req.GetTimeUnixMilli(),
 	}
-	return im.handleErr(im.me.AddOrder(order)), nil
+	ctxTimeout, cancel := context.WithTimeout(ctx, im.timeout)
+	defer cancel()
+	return im.handleErr(im.me.AddOrder(ctxTimeout, order)), nil
 }
 
 func (im *implementedMatchServiceServer) CancelOrder(ctx context.Context, req *CancelOrderRequest) (*CommonResponse, error) {
@@ -56,7 +60,9 @@ func (im *implementedMatchServiceServer) CancelOrder(ctx context.Context, req *C
 		Id:   req.GetId(),
 		Pair: strings.ToUpper(req.GetPair()),
 	}
-	return im.handleErr(im.me.CancelOrder(order)), nil
+	ctxTimeout, cancel := context.WithTimeout(ctx, im.timeout)
+	defer cancel()
+	return im.handleErr(im.me.AddOrder(ctxTimeout, order)), nil
 }
 
 func (im *implementedMatchServiceServer) QueryDeep(ctx context.Context, req *QueryDeepRequest) (*CommonResponse, error) {

@@ -1,6 +1,7 @@
 package pool
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -9,6 +10,8 @@ import (
 
 func TestGTCPool(t *testing.T) {
 	mpl := NewMatchPool()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	order := &models.Order{
 		Id:            "1",
 		UserId:        "1",
@@ -20,7 +23,7 @@ func TestGTCPool(t *testing.T) {
 		TimeInForce:   "GTC",
 		TimeUnixMilli: time.Now().UnixMilli(),
 	}
-	mpl.Input(order)
+	mpl.Input(ctx, order)
 	order = &models.Order{
 		Id:            "2",
 		UserId:        "1",
@@ -32,7 +35,7 @@ func TestGTCPool(t *testing.T) {
 		TimeInForce:   "GTC",
 		TimeUnixMilli: time.Now().UnixMilli(),
 	}
-	mpl.Input(order)
+	mpl.Input(ctx, order)
 	order = &models.Order{
 		Id:            "3",
 		UserId:        "2",
@@ -44,7 +47,7 @@ func TestGTCPool(t *testing.T) {
 		TimeInForce:   "GTC",
 		TimeUnixMilli: time.Now().UnixMilli(),
 	}
-	mpl.Input(order)
+	mpl.Input(ctx, order)
 	order = &models.Order{
 		Id:            "4",
 		UserId:        "2",
@@ -56,7 +59,7 @@ func TestGTCPool(t *testing.T) {
 		TimeInForce:   "GTC",
 		TimeUnixMilli: time.Now().UnixMilli(),
 	}
-	mpl.Input(order)
+	mpl.Input(ctx, order)
 	ch := mpl.Output()
 	for trade := range ch {
 		fmt.Printf("成交:%+v\n", trade)
