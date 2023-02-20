@@ -19,13 +19,10 @@ type MatchPool struct {
 	ctx          context.Context
 	cancelFunc   context.CancelFunc
 	deepSnapshot *deepSnapshot
-	timer        *time.Timer   //超时控制
-	timeout      time.Duration //超时时间
 }
 
 func NewMatchPool() *MatchPool {
 	ctx, cancelFunc := context.WithCancel(common.ServerStatus.Context())
-	timeout := time.Second
 	matchPool := &MatchPool{
 		orderMap:     make(map[string]*models.Order),
 		orderChan:    make(chan *models.Order, 10000),
@@ -35,8 +32,6 @@ func NewMatchPool() *MatchPool {
 		ctx:          ctx,
 		cancelFunc:   cancelFunc,
 		deepSnapshot: newDeepSnapshot(),
-		timer:        time.NewTimer(timeout),
-		timeout:      timeout,
 	}
 	go matchPool.listenSignal()
 	go matchPool.run()
@@ -87,16 +82,15 @@ func (m *MatchPool) QueryDeep(pair string) ([][3]string, [][3]string) {
 }
 
 // 订单输入  异步
-func (m *MatchPool) Input(order *models.Order) error {
+func (m *MatchPool) Input(ctx context.Context, order *models.Order) error {
 	select {
 	case <-m.ctx.Done():
 		return common.ServerCancelErr
 	default:
-		m.timer.Reset(m.timeout)
 		select {
 		case m.orderChan <- order:
 			return nil
-		case <-m.timer.C:
+		case <-ctx.Done():
 			return common.OrderHandleTimeoutErr
 		}
 	}

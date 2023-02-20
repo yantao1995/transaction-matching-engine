@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 )
 
@@ -9,6 +11,7 @@ var rootCmd = &cobra.Command{
 	Short: "虚拟货币交易撮合引擎",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
+		os.Exit(0)
 	},
 }
 

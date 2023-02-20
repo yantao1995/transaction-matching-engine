@@ -32,14 +32,16 @@ type serverStatus struct {
 	wg         *sync.WaitGroup
 }
 
-//等待操作系统信号，并发出退出信号
+// 等待操作系统信号，并发出退出信号
 func (ss *serverStatus) waitSignal() {
+	ss.wg.Add(1)
+	defer ss.wg.Done()
 	<-ss.exitSignal
 	fmt.Println("系统收到退出信号...")
 	ss.cancelFunc()
 }
 
-//获取系统全局context
+// 获取系统全局context
 func (ss *serverStatus) Context() context.Context {
 	return ss.ctx
 }
@@ -52,7 +54,7 @@ func (ss *serverStatus) Done() {
 	ss.wg.Done()
 }
 
-//等待安全退出
+// 等待安全退出
 func (ss *serverStatus) Wait() {
 	ss.wg.Wait()
 	fmt.Println("系统已退出.")

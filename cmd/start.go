@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"transaction-matching-engine/engine"
 	"transaction-matching-engine/grpc"
@@ -20,6 +21,7 @@ var (
 		Short: "启动服务",
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
+			os.Exit(0)
 		},
 	}
 
@@ -43,7 +45,7 @@ var (
 	}
 )
 
-//服务启动前参数检查，数据载入
+// 服务启动前参数检查，数据载入
 func preServerRun(cmd *cobra.Command, args []string) {
 	if len(args) == 0 {
 		fmt.Println("未在启动参数指定交易对,例： [start x服务 BTC-USDT] \r\n交易对将从配置文件加载...")
