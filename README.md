@@ -36,12 +36,20 @@ GTC|订单会一直有效,直到被成交或者取消|支持|支持
 
 ### 项目结构
 
-- cmd 启动命令相关
-- common 系统运行时组件
-- engine 撮合引擎
-- grpc rpc对外服务
-- models 数据模型
-- pool 撮合池
+```
+├─cmd 启动命令相关
+├─common 安全退出与系统运行时参数
+├─dump  持久化数据文件
+│  │ ├─pairs.json  快捷启动配置
+│  ├─BTC-USDT   具体交易对持久化示例1
+│  │ ├─asks.json   卖盘数据
+│  │ ├─bids.json   买盘数据
+│  └─ETH-USDT   具体交易对持久化示例2
+├─engine  撮合引擎与持久化
+├─grpc    grpc对外服务实现
+├─models  数据模型
+└─pool   撮合池   
+```
 
 ### orders_test.json 订单类型测试数据
 
