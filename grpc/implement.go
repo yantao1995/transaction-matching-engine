@@ -62,7 +62,7 @@ func (im *implementedMatchServiceServer) CancelOrder(ctx context.Context, req *C
 	}
 	ctxTimeout, cancel := context.WithTimeout(ctx, im.timeout)
 	defer cancel()
-	return im.handleErr(im.me.AddOrder(ctxTimeout, order)), nil
+	return im.handleErr(im.me.CancelOrder(ctxTimeout, order)), nil
 }
 
 func (im *implementedMatchServiceServer) QueryDeep(ctx context.Context, req *QueryDeepRequest) (*CommonResponse, error) {
