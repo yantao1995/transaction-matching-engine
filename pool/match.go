@@ -237,7 +237,7 @@ func (m *MatchPool) handleTrade(taker, maker *models.Order, pl *pool, tradeType 
 		Pair:           taker.Pair,
 		TakerUserId:    taker.UserId,
 		TakerOrderId:   taker.Id,
-		Price:          taker.Pair,
+		Price:          taker.Price,
 		Amount:         taker.Amount,
 		TakerOrderType: taker.Type,
 		TakerOrderSide: taker.Side,
