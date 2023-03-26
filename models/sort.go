@@ -10,10 +10,10 @@ import "github.com/shopspring/decimal"
 		asks与bids中调用Compare,增加分值比较逻辑即可: m[userId1] <=> m[userId2]
 */
 
-//跳表排序key  ,优先级分别为 price,TimeUnixMilli,amount,id
+// 跳表排序key  ,优先级分别为 price,TimeUnixMilli,amount,id
 type SortKey struct {
 	Price         decimal.Decimal //价格  根据 asks/bids 类型升降排序
 	TimeUnixMilli int64           //下单时间  时间早的排前面
-	Amount        decimal.Decimal //数量	数量大的排前面
-	Id            string          //订单唯一标识   增加订单号比较，保证排序key不重复
+	//Amount        decimal.Decimal //数量	数量大的排前面     【因为成交会导致数量变化，生成的排序key会变化，不使用数量作为key】
+	Id string //订单唯一标识   增加订单号比较，保证排序key不重复
 }
